@@ -17,3 +17,8 @@ TOOLS = [
   }
 }
 ]
+
+
+def run_read_tool(file_path: str) -> str:
+    with open(file_path, "r") as f:
+        return f.read()

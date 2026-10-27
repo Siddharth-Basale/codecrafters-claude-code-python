@@ -1,13 +1,15 @@
 import argparse
 import os
 import sys
-from .tools import TOOLS
+from .tools import TOOLS, run_read_tool
 from openai import OpenAI
+import json
 
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1")
-
-
+TOOL_MAP = {
+    "Read": run_read_tool,
+}
 
 
 def main():
@@ -31,8 +33,21 @@ def main():
 
     print("Logs from your program will appear here!", file=sys.stderr)
 
+    messages = chat.choices[0].message
 
-    print(chat.choices[0].message.content)
+    if messages.tool_calls:
+        for tool_call in messages.tool_calls:
+            name = tool_call.function.name
+            arg = json.loads(tool_call.function.arguments)
+            if name in TOOL_MAP:
+                result = TOOL_MAP[name](**arg)
+                print(result)
+    else:
+        print(chat.choices[0].message.content)
+
+
+
+    
 
 
 if __name__ == "__main__":
