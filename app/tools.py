@@ -1,4 +1,5 @@
 import os 
+import subprocess
 
 TOOLS = [
     {
@@ -38,7 +39,25 @@ TOOLS = [
       }
     }
   }
+},
+{
+  "type": "function",
+  "function": {
+    "name": "Bash",
+    "description": "Execute a shell command",
+    "parameters": {
+      "type": "object",
+      "required": ["command"],
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "The command to execute"
+        }
+      }
+    }
+  }
 }
+
 ]
 
 
@@ -55,3 +74,12 @@ def run_write_tool(file_path: str, content: str) -> str:
         f.write(content)
 
     return f"Successfully wrote to {file_path}"
+
+def run_bash_tool(command: str) -> str:
+    result = subprocess.run(
+        command,
+        shell=True,
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout + result.stderr
