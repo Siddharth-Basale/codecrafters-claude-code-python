@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 from .tools import TOOLS, run_read_tool, run_write_tool, run_bash_tool
+from .skills import health
 from openai import OpenAI
 import json
 
@@ -35,7 +36,7 @@ def main():
 
     messageslst = [{"role": "user", "content": args.p}]
 
-
+    health()
     while True:
         chat = callai(messageslst)
         assistant_message = chat.choices[0].message
