@@ -1,7 +1,7 @@
 import argparse
 import os
 import sys
-from .tools import TOOLS, run_read_tool
+from .tools import TOOLS, run_read_tool, run_write_tool
 from openai import OpenAI
 import json
 
@@ -9,6 +9,7 @@ API_KEY = os.getenv("OPENROUTER_API_KEY")
 BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1")
 TOOL_MAP = {
     "Read": run_read_tool,
+    "Write": run_write_tool
 }
 
 def callai(lst):
@@ -52,12 +53,6 @@ def main():
         else:
          print(assistant_message.content)
          break
-        
-
-
-
-    
-
 
 if __name__ == "__main__":
     main()
