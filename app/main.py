@@ -11,39 +11,48 @@ TOOL_MAP = {
     "Read": run_read_tool,
 }
 
+def callai(lst):
+    client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
+    chat = client.chat.completions.create(
+            model="anthropic/claude-haiku-4.5",
+            messages=lst,
+            tools=TOOLS
+        )
+    return chat
+
+
 
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("-p", required=True)
     args = p.parse_args()
+    print(f"args :{args.p}", file=sys.stderr)
 
     if not API_KEY:
         raise RuntimeError("OPENROUTER_API_KEY is not set")
 
-    client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
+    messageslst = [{"role": "user", "content": args.p}]
 
-    chat = client.chat.completions.create(
-        model="anthropic/claude-haiku-4.5",
-        messages=[{"role": "user", "content": args.p}],
-        tools=TOOLS
-    )
 
-    if not chat.choices or len(chat.choices) == 0:
-        raise RuntimeError("no choices in response")
-
-    print("Logs from your program will appear here!", file=sys.stderr)
-
-    messages = chat.choices[0].message
-
-    if messages.tool_calls:
-        for tool_call in messages.tool_calls:
-            name = tool_call.function.name
-            arg = json.loads(tool_call.function.arguments)
-            if name in TOOL_MAP:
-                result = TOOL_MAP[name](**arg)
-                print(result)
-    else:
-        print(chat.choices[0].message.content)
+    while True:
+        chat = callai(messageslst)
+        assistant_message = chat.choices[0].message
+        messageslst.append(assistant_message)
+        if assistant_message.tool_calls:
+            for tool_call in assistant_message.tool_calls:
+              name = tool_call.function.name
+              arg = json.loads(tool_call.function.arguments)
+              if name in TOOL_MAP:
+                  result = TOOL_MAP[name](**arg)
+                  messageslst.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": str(result)
+                })
+        else:
+         print(assistant_message.content)
+         break
+        
 
 
 
