@@ -2,9 +2,11 @@ import argparse
 import os
 import sys
 from .tools import TOOLS, run_read_tool, run_write_tool, run_bash_tool
-from .skills import health
+from .skills import load_skills
 from openai import OpenAI
 import json
+
+
 
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1")
@@ -34,9 +36,12 @@ def main():
     if not API_KEY:
         raise RuntimeError("OPENROUTER_API_KEY is not set")
 
-    messageslst = [{"role": "user", "content": args.p}]
+    messageslst = [
+       { "role": "system", "content": f"{load_skills()}"},
+       {"role": "user", "content": args.p}
+       ]
 
-    health()
+    
     while True:
         chat = callai(messageslst)
         assistant_message = chat.choices[0].message
